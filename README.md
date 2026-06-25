@@ -1,4 +1,4 @@
-# mira-vs - Mira Voice Stack (deployable module)
+# Mira Voice Stack
 
 On-device smart voice for the Spotify Car Thing: wake ("hey mira") -> ASR ->
 cascade re-rank against your library -> play/control.
