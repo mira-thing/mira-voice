@@ -1,0 +1,61 @@
+THIRD-PARTY LICENSES - mira-voice artifact bundle
+=================================================
+This bundle redistributes prebuilt, unmodified upstream components. Each retains its own
+license; mira-thing claims no ownership over them. The only first-party model is the
+"hey mira" wake word (hey_mira.tflite) and is NOT in this bundle, it lives in the mira-voice
+GitHub repo under that repo's license.
+
+sherpa-onnx Zipformer ASR (GigaSpeech, int8)
+  files:    zipformer/sherpa-onnx-zipformer-gigaspeech-2023-12-12/*
+  upstream: https://github.com/k2-fsa/sherpa-onnx  (release model, unmodified)
+  license:  Apache-2.0
+
+ONNX Runtime
+  files:    lib/libonnxruntime.so
+  upstream: https://github.com/microsoft/onnxruntime
+  license:  MIT
+
+TensorFlow Lite (C API)
+  files:    lib/libtensorflowlite_c.so
+  upstream: https://github.com/tensorflow/tensorflow
+  license:  Apache-2.0
+
+sherpa-onnx C API
+  files:    lib/libsherpa-onnx-c-api.so
+  upstream: https://github.com/k2-fsa/sherpa-onnx
+  license:  Apache-2.0
+
+openWakeWord base feature models
+  files:    models/melspectrogram.tflite, models/embedding_model.tflite
+  upstream: https://github.com/dscripka/openWakeWord
+  license:  Apache-2.0
+  note:     shared base models only; the wake classifier (hey_mira.tflite) is first-party, not here.
+
+espeak-ng + espeak-ng-data (grapheme-to-phoneme)
+  files:    bin/espeak-ng, lib/libespeak-ng.so.1, espeak-ng-data/* (trimmed to en-us)
+  upstream: https://github.com/espeak-ng/espeak-ng
+  license:  GPL-3.0-or-later  (complete source available upstream)
+
+GNU C Library (glibc) + dynamic loader
+  files:    lib/libc.so.6, libm.so.6, libdl.so.2, libpthread.so.0, librt.so.1,
+            ld-linux-aarch64.so.1, and related
+  upstream: https://sourceware.org/glibc/
+  license:  LGPL-2.1-or-later
+
+libstdc++ (GCC runtime)
+  files:    lib/libstdc++.so.6
+  upstream: https://gcc.gnu.org/
+  license:  GPL-3.0 WITH GCC-exception-3.1
+
+Audio/support libraries (pulled in transitively; unused on-device g2p runs `-q --ipa`,
+no synthesis)
+  files:    lib/libasound.so.2 (ALSA, LGPL-2.1+), lib/libpulse*.so (PulseAudio, LGPL-2.1+),
+            lib/libopus.so.0 (Opus, BSD-3-Clause), lib/libvorbis*.so + libogg (Xiph, BSD-3-Clause),
+            lib/libsndfile.so.1 (LGPL-2.1+), lib/libsystemd.so.0 (LGPL-2.1+), lib/libX11.so.6 (MIT),
+            and their transitive dependencies each under its own upstream license.
+
+First-party helper binaries
+  files:    bin/oww_wake, bin/sherpa_asr_server
+  source:   https://github.com/mira-thing/mira-voice  (src/)
+  license:  Apache-2.0 (see LICENSE)
+  note:     oww_wake statically links tinyalsa (https://github.com/tinyalsa/tinyalsa, BSD-3-Clause)

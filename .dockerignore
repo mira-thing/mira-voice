@@ -1,0 +1,9 @@
+# the image only needs src/oww_wake.c; keep the build context small
+artifacts/
+eval/
+models/
+*.md
+*.sh
+.gitignore
+LICENSE
+THIRD_PARTY_LICENSES
