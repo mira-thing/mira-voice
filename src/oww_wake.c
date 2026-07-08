@@ -142,6 +142,12 @@ static float chain_push(Chain *c, const int16_t *chunk) {
 	c->t_mel += now_s() - a; c->n_mel++;
 	const TfLiteTensor *mo = TfLiteInterpreterGetOutputTensor(c->mel, 0);
 	long mo_floats = TfLiteTensorByteSize(mo) / sizeof(float);
+	if (mo_floats > MEL_IO_MAX) {
+		/* a swapped/wrong mel model would overflow mel_io */
+		fprintf(stderr, "mel output %ld floats > buffer %d; wrong model?\n",
+		        mo_floats, MEL_IO_MAX);
+		return -1;
+	}
 	long frames = mo_floats / MEL_BINS;
 	TfLiteTensorCopyToBuffer(mo, c->mel_io, mo_floats * sizeof(float));
 
@@ -249,8 +255,13 @@ static int write_wav_s16(const char *path, const int16_t *data, long n) {
 	fwrite("fmt ", 1, 4, f); put_u32(f, 16); put_u16(f, 1); put_u16(f, 1);
 	put_u32(f, SR); put_u32(f, SR * 2); put_u16(f, 2); put_u16(f, 16);
 	fwrite("data", 1, 4, f); put_u32(f, bytes);
-	fwrite(data, 2, n, f);
-	fclose(f);
+	size_t wr = fwrite(data, 2, n, f);
+	int close_err = fclose(f); /* flush catches buffered short writes (ENOSPC) */
+	if (wr != (size_t)n || close_err != 0) {
+		fprintf(stderr, "%s: short write (disk full?), dropping partial clip\n", path);
+		remove(path);
+		return -1;
+	}
 	return 0;
 }
 

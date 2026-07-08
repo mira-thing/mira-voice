@@ -25,6 +25,9 @@ need "$SHERPA_DIR/decoder-epoch-30-avg-1.int8.onnx"
 need "$SHERPA_DIR/joiner-epoch-30-avg-1.int8.onnx"
 need "$SHERPA_DIR/tokens.txt"
 need "$SHERPA_DIR/bpe.model"
+# tokens.txt must be a real vocab, not a truncated download (gigaspeech bpe = 500 lines)
+tok_lines=$(wc -l < "$SHERPA_DIR/tokens.txt")
+[ "$tok_lines" -ge 100 ] || die "tokens.txt suspiciously short ($tok_lines lines)"
 need "$VS/espeak-build/output/espeak-ng-data"
 need "$ROOT/mira-daemon/go-librespot-armv6"
 
@@ -96,6 +99,10 @@ install -m0755 "$ROOT/mira-daemon/go-librespot-armv6" "$OUT/daemon/go-librespot-
 
 ( cd "$OUT" && find . -type f ! -name MANIFEST.txt -exec md5sum {} \; | sort -k2 > MANIFEST.txt )
 TOTAL=$(du -sh "$OUT" | cut -f1)
-say "wake model md5: $(md5sum "$OUT/models/hey_mira.tflite" | cut -d' ' -f1) (expect 36c33c8b... = c3)"
+C3_MD5="36c33c8b53f69ba4b1d935f6d10f9431"
+WAKE_MD5=$(md5sum "$OUT/models/hey_mira.tflite" | cut -d' ' -f1)
+[ "$WAKE_MD5" = "$C3_MD5" ] \
+  || { printf '\033[0;31m[collect] FATAL: wake model md5 %s != pinned c3 %s (stale-c3 trap)\033[0m\n' "$WAKE_MD5" "$C3_MD5" >&2; exit 1; }
+say "wake model md5: $WAKE_MD5 (pinned c3 OK)"
 say "bundle assembled: $TOTAL across $(grep -c . "$OUT/MANIFEST.txt") files"
 say "DONE -> $OUT"

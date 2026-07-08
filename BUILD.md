@@ -4,10 +4,11 @@
 source changes, then rerun it. All aarch64 bins target the A53:
 `-march=armv8-a+crypto+crc -mtune=cortex-a53 -moutline-atomics`.
 
-`src/` holds reference snapshots of the two project-owned C sources; the working copies live in the
-research dirs (keep in sync if you edit):
-- `oww_wake.c` -> `wakeword-experiment/src/oww_wake.c`
-- `sherpa_asr_server.c` -> `voice-stack/moonshine/sidecar/sherpa_asr_server.c`
+`src/` holds the two project-owned C sources:
+- `oww_wake.c` - wake-word listener + command capture (TFLite C API + tinyalsa)
+- `sherpa_asr_server.c` - persistent ASR sidecar (sherpa-onnx C API)
+
+Both build with the toolchain image from the vendored `Dockerfile` (see below).
 
 | Artifact | Build |
 |---|---|
