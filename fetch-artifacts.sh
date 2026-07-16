@@ -13,6 +13,7 @@ if command -v huggingface-cli >/dev/null 2>&1; then
 elif command -v git-lfs >/dev/null 2>&1; then
   tmp="$(mktemp -d)"
   git clone --depth 1 --branch "$REV" "https://huggingface.co/$HF_REPO" "$tmp"
+  ( cd "$tmp" && git lfs install --local >/dev/null && git lfs pull )
   cp -a "$tmp"/. "$OUT"/ && rm -rf "$OUT/.git" "$tmp"
 else
   echo "[fetch] ERROR: need 'huggingface-cli' (pip install huggingface_hub) or git-lfs" >&2
@@ -22,8 +23,17 @@ fi
 # verify the downloaded bundle before touching it
 if [ -f "$OUT/MANIFEST.txt" ]; then
   echo "[fetch] verifying bundle against MANIFEST.txt..."
-  (cd "$OUT" && md5sum -c --quiet MANIFEST.txt) \
-    || { echo "[fetch] ERROR: bundle md5 verification FAILED (corrupt/partial download)" >&2; exit 1; }
+  (cd "$OUT" && grep -vE '\./(README\.md|\.gitattributes|THIRD_PARTY_LICENSES)$' MANIFEST.txt > .manifest.artifacts) \
+    || { echo "[fetch] ERROR: could not read MANIFEST.txt" >&2; exit 1; }
+  (cd "$OUT" && md5sum -c --quiet .manifest.artifacts && rm -f .manifest.artifacts) \
+    || { echo "[fetch] ERROR: bundle md5 verification FAILED" >&2
+         if head -c 40 "$OUT/models/melspectrogram.tflite" 2>/dev/null | grep -q "git-lfs.github.com"; then
+           echo "[fetch] the bundle is git-lfs POINTER files, not the real models." >&2
+           echo "[fetch] run 'git lfs install' once, then retry." >&2
+         else
+           echo "[fetch] (corrupt or partial download)" >&2
+         fi
+         exit 1; }
 else
   echo "[fetch] WARNING: bundle has no MANIFEST.txt; skipping md5 verification" >&2
 fi
