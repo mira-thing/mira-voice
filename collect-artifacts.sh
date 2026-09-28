@@ -38,6 +38,7 @@ mkdir -p "$OUT"/bin "$OUT"/lib "$OUT"/models "$OUT"/espeak-ng-data "$OUT"/daemon
 
 install -m0755 "$WW/output/oww_wake"                    "$OUT/bin/oww_wake"
 install -m0755 "$VS/moonshine/sidecar/sherpa_asr_server" "$OUT/bin/sherpa_asr_server"
+install -m0644 "$HERE/src/ort.conf"                     "$OUT/zipformer/ort.conf"
 install -m0755 "$VS/espeak-build/output/espeak-ng"      "$OUT/bin/espeak-ng"
 
 cp -a "$WW/output/lib/."                "$OUT/lib/"

@@ -3,8 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "sherpa-onnx/c-api/c-api.h"
+
+// disables ort's cpu arena, which otherwise keeps the longest clips activations (~80MB) forever
+#define ORT_CONF "/usr/share/mira/voice/zipformer/ort.conf"
 
 int main(int argc, char **argv) {
   if (argc < 5) {
@@ -32,13 +36,13 @@ int main(int argc, char **argv) {
   config.model_config.transducer.joiner = joiner;
   config.model_config.tokens = tokens;
   config.model_config.num_threads = num_threads;
-  config.model_config.provider = "cpu";
+  config.model_config.provider = access(ORT_CONF, R_OK) == 0 ? "cpu:" ORT_CONF : "cpu";
   config.model_config.debug = 0;
   config.decoding_method = method;
   config.max_active_paths = 4;
 
-  fprintf(stderr, "sherpa_asr_server: loading %s (threads=%d, method=%s)...\n", encoder,
-          num_threads, method);
+  fprintf(stderr, "sherpa_asr_server: loading %s (threads=%d, method=%s, provider=%s)...\n", encoder,
+          num_threads, method, config.model_config.provider);
   const SherpaOnnxOfflineRecognizer *rec = SherpaOnnxCreateOfflineRecognizer(&config);
   if (rec == NULL) {
     fprintf(stderr, "sherpa_asr_server: failed to create recognizer\n");
